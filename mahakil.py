@@ -58,19 +58,28 @@ class MAHAKIL(object):
         label_new = np.ones(len(self.new))
         return np.append(data, self.new, axis=0), np.append(label, label_new, axis=0)
 
-    @staticmethod
-    def mahalanobis_distance(x):
+    def mahalanobis_distance(self, x):
         # x : 数组
         mu = np.mean(x, axis=0)  # 均值
         d = []
         for i in range(x.shape[0]):
             x_mu = np.atleast_2d(x[i] - mu)
-            x_xbr = np.atleast_2d(x - mu)
-            s = (x.shape[0] - 1) * np.dot(np.transpose(x_xbr), x_xbr)
+            s = self.cov(x)
             d_squre = np.dot(np.dot(x_mu, np.linalg.inv(s)), np.transpose(x_mu))[0][0]
             d_tuple = (i, d_squre)
             d.append(d_tuple)
         return d
+
+    @staticmethod
+    def cov(x):
+        # x : 数组
+        s = np.zeros((x.shape[1], x.shape[1]))
+        mu = np.mean(x, axis=0)  # 均值
+        for i in range(x.shape[0]):
+            x_xbr = np.atleast_2d(x - mu)
+            s_i = np.dot(np.transpose(x_xbr), x_xbr)
+            s = s + s_i
+        return np.divide(s, x.shape[0])
 
     # 生成新样本
     def generate_new_sample(self, bin1, bin2, g, l, k, is_full):
